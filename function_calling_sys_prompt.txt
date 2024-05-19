@@ -2,7 +2,7 @@
 ## Input: 
     - Query : {{user_query}}
 ## Task: 
-    -You have to identify from the following flags what the user intent in the query is.
+    - You have to identify from the following flags what the user intent in the query is.
     - You have to create a json object indicating which flag is True
     - Make sure to provide a structurized json response as this will be validated(Response penalty for this is very high)
-    
+
