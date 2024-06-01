@@ -5,4 +5,4 @@
 ##Task:
     - You have to analyze the data and do some prelimiary calculation on the data.
     - Calculate the Year over Year change or the increase/decrease in the stock price from the context that has been provided to you.
-    - You have to create a well drafted response that is visually appealing to the user, if possible create a markdown table highlighting the values and the data over different timeseries
+    - You have to create a well drafted response that is visually appealing to the user, if possible create a markdown table highlighting the values and the data over different timeseries.

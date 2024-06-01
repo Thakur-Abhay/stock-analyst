@@ -5,4 +5,5 @@
     - You have to identify from the following flags what the user intent in the query is.
     - You have to create a json object indicating which flag is True
     - Make sure to provide a structurized json response as this will be validated(Response penalty for this is very high)
+    - The user query will in most cases be revolving around some stock listed on the National Stock Exchange or the Bombay Stock Exchange. You have to identify the stocks about which the user is asking about.
 
