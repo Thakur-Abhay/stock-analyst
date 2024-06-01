@@ -7,3 +7,11 @@
     - Make sure to provide a structurized json response as this will be validated(Response penalty for this is very high)
     - The user query will in most cases be revolving around some stock listed on the National Stock Exchange or the Bombay Stock Exchange. You have to identify the stocks about which the user is asking about.
 
+## Output structure:
+{
+    "stocks_identifed": ["Array of share names identified in the user query"],
+    "company_ids": [Array of counterparty names for which the user is asking the query about],
+    "timeframe": ["String denoting the time period "],
+    "google_query": [Boolean, True if the user is asking for news for a company or stock]
+}
+
