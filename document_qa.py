@@ -1,12 +1,14 @@
 from transformers import DonutProcessor, VisionEncoderDecoderModel
 from PIL import Image
-import sys
+# import sys
 
-def load_model(model_name):
+
+def load_model(model_name="meta-llama/Meta-Llama-3-70B"):
     """Load the VQA model and processor from Hugging Face."""
     processor = DonutProcessor.from_pretrained(model_name)
     model = VisionEncoderDecoderModel.from_pretrained(model_name)
     return model, processor
+
 
 def answer_question(image_path, question, model_name):
     """Answer a question based on a given image and model name."""
@@ -31,20 +33,19 @@ def answer_question(image_path, question, model_name):
 
     return answer
 
-def main():
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <model_name> <image_path> <question>")
-        return
 
-    model_name = sys.argv[1]
-    image_path = sys.argv[2]
-    question = sys.argv[3]
+def main():
+
+    model_name = "meta-llama/Meta-Llama-3-8B"
+    image_path = "example_VQA_001.jpg"
+    question = "How many Unique names are present under the 'Names' column"
 
     # Get the answer
     answer = answer_question(image_path, question, model_name)
 
     print(f"Question: {question}")
     print(f"Answer: {answer}")
+
 
 if __name__ == "__main__":
     main()
