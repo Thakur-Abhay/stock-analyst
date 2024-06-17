@@ -1,45 +1,47 @@
-from transformers import AutoModelForQuestionAnswering, AutoTokenizer
-import torch
+from transformers import DonutProcessor, VisionEncoderDecoderModel
+from PIL import Image
 import sys
 
 def load_model(model_name):
-    """Load the QA model and tokenizer from Hugging Face."""
-    model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    return model, tokenizer
+    """Load the VQA model and processor from Hugging Face."""
+    processor = DonutProcessor.from_pretrained(model_name)
+    model = VisionEncoderDecoderModel.from_pretrained(model_name)
+    return model, processor
 
-def answer_question(question, document, model_name):
-    """Answer a question based on a given document and model name."""
-    # Load model and tokenizer
-    model, tokenizer = load_model(model_name)
-    
-    # Tokenize input
-    inputs = tokenizer.encode_plus(question, document, return_tensors='pt')
-    input_ids = inputs['input_ids'].tolist()[0]
+def answer_question(image_path, question, model_name):
+    """Answer a question based on a given image and model name."""
+    # Load model and processor
+    model, processor = load_model(model_name)
 
-    with torch.no_grad():
-        outputs = model(**inputs)
+    # Open image
+    image = Image.open(image_path)
 
-    # Get the most likely beginning and end of the answer span
-    answer_start = torch.argmax(outputs.start_logits)
-    answer_end = torch.argmax(outputs.end_logits) + 1
+    # Preprocess image and generate inputs
+    pixel_values = processor(image, return_tensors="pt").pixel_values
 
-    # Convert tokens to the answer string
-    answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end]))
+    # Generate output using the model
+    question_prompt = f"question: {question}"
+    inputs = processor.tokenizer(question_prompt, return_tensors="pt").input_ids
+
+    # Perform inference
+    outputs = model.generate(pixel_values=pixel_values, input_ids=inputs)
+
+    # Decode the output
+    answer = processor.decode(outputs[0], skip_special_tokens=True)
 
     return answer
 
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python script.py <model_name> <document> <question>")
+        print("Usage: python script.py <model_name> <image_path> <question>")
         return
-    
+
     model_name = sys.argv[1]
-    document = sys.argv[2]
+    image_path = sys.argv[2]
     question = sys.argv[3]
 
     # Get the answer
-    answer = answer_question(question, document, model_name)
+    answer = answer_question(image_path, question, model_name)
 
     print(f"Question: {question}")
     print(f"Answer: {answer}")
