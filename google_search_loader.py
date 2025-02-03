@@ -5,6 +5,14 @@ from googlesearch import search
 
 def google_search(query, num_results=3):
     # Perform the search and fetch the top results
+    """
+    Perform a Google search and fetch the content from the top results.
+    
+    :param query: The search query to use.
+    :param num_results: The number of results to fetch. Defaults to 3.
+
+    :return: A dictionary mapping URLs to the corresponding webpage content.
+    """
     results = search(query, num_results=num_results)
 
     # Function to fetch and parse webpage content
