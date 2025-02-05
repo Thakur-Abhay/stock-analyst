@@ -13,7 +13,7 @@ def load_model(model_name="meta-llama/Meta-Llama-3-70B"):
 def answer_question(image_path, question, model_name):
     """Answer a question based on a given image and model name."""
     # Load model and processor
-    model, processor = load_model(model_name)
+    model, processor = load_model(model_name="meta-llama/Meta-Llama-3-70B")
 
     # Open image
     image = Image.open(image_path)
