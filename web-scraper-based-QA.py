@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Configuration
 openai.api_key = ''  # Your OpenAI API Key
 
+
 # Function to interpret user query using the latest OpenAI API
 async def interpret_query(query: str) -> str:
     response = openai.ChatCompletion.create(
@@ -19,12 +20,14 @@ async def interpret_query(query: str) -> str:
     refined_query = response['choices'][0]['message']['content']
     return refined_query
 
+
 # Function to perform a web search using Googlesearch-python
 async def web_search(refined_query: str):
     search_results = []
     for url in search(refined_query, num_results=5):  # Set num_results for top results
         search_results.append(url)
     return search_results
+
 
 # Function to extract content from a webpage using newspaper3k
 def extract_content_from_url(url: str) -> str:
@@ -41,6 +44,7 @@ def extract_content_from_url(url: str) -> str:
         print(f"Error extracting content from {url}: {e}")
         return None
 
+
 # Function to get embeddings of a text using OpenAI's embedding model
 def get_embeddings(text: str) -> np.ndarray:
     response = openai.Embedding.create(
@@ -48,6 +52,7 @@ def get_embeddings(text: str) -> np.ndarray:
         input=text
     )
     return np.array(response['data'][0]['embedding'])
+
 
 # Function to check relevance of the content using embeddings
 async def check_relevance(content: str, query: str) -> bool:
@@ -63,6 +68,7 @@ async def check_relevance(content: str, query: str) -> bool:
         return True
     return False
 
+
 # Function to extract the answer from the content using OpenAI's GPT-4
 async def extract_answer_from_context(context: str, query: str) -> str:
     response = openai.ChatCompletion.create(
@@ -72,6 +78,7 @@ async def extract_answer_from_context(context: str, query: str) -> str:
     )
     answer = response['choices'][0]['message']['content']
     return answer
+
 
 # Main function to handle user query and search
 async def get_real_time_info(query: str):
