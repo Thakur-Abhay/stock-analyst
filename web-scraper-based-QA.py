@@ -12,12 +12,12 @@ openai.api_key = ''  # Your OpenAI API Key
 
 # Function to interpret user query using the latest OpenAI API
 async def interpret_query(query: str) -> str:
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "system", "content": "You are a helpful assistant that refines user queries for optimal web search."},
                   {"role": "user", "content": query}]
     )
-    refined_query = response['choices'][0]['message']['content']
+    refined_query = response.choices[0].message.content
     return refined_query
 
 
@@ -83,14 +83,11 @@ async def extract_answer_from_context(context: str, query: str) -> str:
 # Main function to handle user query and search
 async def get_real_time_info(query: str):
     print(f"User Query: {query}")
-    
     # Step 1: Interpret the query
     refined_query = await interpret_query(query)
     print(f"Refined Query: {refined_query}")
-    
     # Step 2: Search the web
     search_results = await web_search(refined_query)
-    
     # Step 3: Extract content and check relevance
     relevant_content = []  # Aggregated content from all relevant pages
     for idx, url in enumerate(search_results, 1):
