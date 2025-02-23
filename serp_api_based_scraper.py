@@ -3,6 +3,7 @@ import asyncio
 import requests
 from newspaper import Article
 import numpy as np
+import tiktoken
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Configuration
@@ -13,7 +14,7 @@ async def interpret_query(query: str) -> str:
     response = openai.ChatCompletion.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that refines user queries for optimal web search."},
+            {"role": "system", "content": "You are a helpful assistant that refines user queries for optimal web search. Make a precise and concise query that can be used for an effective web search"},
             {"role": "user", "content": query}
         ]
     )
@@ -54,19 +55,58 @@ async def check_relevance(content: str, query: str) -> bool:
     return similarity_score > 0.7
 
 # Function to get embeddings of a text using OpenAI's embedding model
-def get_embeddings(text: str) -> np.ndarray:
-    response = openai.Embedding.create(
-        model="text-embedding-ada-002",
-        input=text
-    )
-    return np.array(response['data'][0]['embedding'])
+def get_embeddings(text: str, model_name: str = "text-embedding-ada-002") -> np.ndarray:
+    """
+    Returns an average embedding (as a NumPy array) for the given text using
+    OpenAI's text-embedding-ada-002 model, automatically handling large inputs
+    by splitting them into batches.
+    """
+    # 1. Encode text into tokens
+    enc = tiktoken.encoding_for_model(model_name)
+    tokens = enc.encode(text)
+    
+    # 2. Define a safe chunk size under the model's limit (some overhead recommended)
+    chunk_size = 7000
+    
+    # 3. If text is small enough, just embed it directly
+    if len(tokens) <= chunk_size:
+        response = openai.Embedding.create(
+            model=model_name,
+            input=text
+        )
+        return np.array(response['data'][0]['embedding'])
+    
+    # 4. Otherwise, split tokens into multiple chunks
+    chunks = []
+    start = 0
+    while start < len(tokens):
+        end = start + chunk_size
+        chunks.append(tokens[start:end])
+        start = end
+    
+    # 5. Embed each chunk separately
+    embeddings_list = []
+    for chunk_tokens in chunks:
+        chunk_text = enc.decode(chunk_tokens)
+        response = openai.Embedding.create(
+            model=model_name,
+            input=chunk_text
+        )
+        emb = np.array(response['data'][0]['embedding'])
+        embeddings_list.append(emb)
+    
+    # 6. Average all chunk embeddings to get a single embedding vector
+    stacked = np.vstack(embeddings_list)
+    final_embedding = np.mean(stacked, axis=0)
+    
+    return final_embedding
 
 # Function to extract answer from context using OpenAI's GPT-4
 async def extract_answer_from_context(context: str, query: str) -> str:
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that extracts answers from the given context."},
+            {"role": "system", "content": "You are provided with a context and a question. Your task is to extract the answer to the question from the context."},
             {"role": "user", "content": f"Context: {context}\nQuestion: {query}"}
         ]
     )
@@ -100,7 +140,7 @@ async def get_real_time_info(query: str):
         print(f"\nUsing the following aggregated content as context:\n{combined_context[:1000]}...")
         
         # Step 5: Extract the answer using the aggregated context
-        answer = await extract_answer_from_context(combined_context, query)
+        answer = await extract_answer_from_context(combined_context, refined_query)
         print(f"\n\n\nFinal Answer: {answer}")
     else:
         print("No relevant results found.")
